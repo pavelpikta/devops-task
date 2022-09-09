@@ -3,7 +3,6 @@
 Lambda function that parse dataset from S3 and generate HTML page
 """
 
-import io
 import os
 import urllib.parse
 import pandas as pd
@@ -45,8 +44,8 @@ def upload_page_s3(file_name, bucket, result, obj_name=None,):
 
     try:
         s3_client.put_object(
-            Bucket=BUCKET,
-            Key=FILE_NAME,
+            Bucket=bucket,
+            Key=file_name,
             Body=result,
             CacheControl="max-age=0,no-cache,no-store,must-revalidate",
             ContentType="text/html"
