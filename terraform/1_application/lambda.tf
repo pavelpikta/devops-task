@@ -132,3 +132,21 @@ module "lambda_function_parse" {
     module.s3_static_page
   ]
 }
+
+resource "aws_lambda_permission" "allow_bucket" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda_function_parse.lambda_function_arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = module.s3_dataset_bucket.s3_bucket_arn
+}
+
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = module.s3_dataset_bucket.s3_bucket_id
+
+  lambda_function {
+    lambda_function_arn = module.lambda_function_parse.lambda_function_arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_suffix       = ".csv"
+  }
+}
