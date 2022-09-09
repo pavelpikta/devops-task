@@ -14,7 +14,7 @@ module "lambda_function_dataset" {
   hash_extra = "${var.project}-${var.environment}-dataset-uploader"
 
   memory_size = 512
-  timeout     = 60
+  timeout     = 30
 
   source_path = [
     {
@@ -28,11 +28,23 @@ module "lambda_function_dataset" {
     DATASET_S3_BUCKET = module.s3_dataset_bucket.s3_bucket_id
   }
 
-
   allowed_triggers = {
     UploaderRule = {
       principal  = "events.amazonaws.com"
       source_arn = aws_cloudwatch_event_rule.cron.arn
+    }
+  }
+
+  attach_policy_statements = true
+  policy_statements = {
+    s3_access = {
+      effect = "Allow",
+      actions = [
+        "s3:Put*",
+        "s3:Get*",
+        "s3:Delete*"
+      ],
+      resources = ["arn:aws:s3:::${module.s3_dataset_bucket.s3_bucket_id}/*"]
     }
   }
 
