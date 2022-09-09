@@ -47,7 +47,7 @@ module "lambda_function_dataset" {
 resource "aws_cloudwatch_event_rule" "cron" {
   name                = "${var.project}-${var.environment}-uploader-rule"
   description         = "Cron expression to triger dataset-uploader lambda"
-  schedule_expression = "cron(0 12 * * ? *)"
+  schedule_expression = var.cron_expression
 }
 
 resource "aws_cloudwatch_event_target" "dataset_lambda_function" {
