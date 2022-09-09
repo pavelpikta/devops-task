@@ -44,7 +44,13 @@ def upload_page_s3(file_name, bucket, result, obj_name=None,):
         obj_name = file_name
 
     try:
-        s3_client.upload_fileobj(io.BytesIO(result), bucket, obj_name)
+        s3_client.put_object(
+            Bucket=BUCKET,
+            Key=FILE_NAME,
+            Body=result,
+            CacheControl="max-age=0,no-cache,no-store,must-revalidate",
+            ContentType="text/html"
+        )
         print("Page uploaded to S3 bucket")
 
     except botocore.exceptions.ClientError as error:
