@@ -23,6 +23,12 @@ module "lambda_function_dataset" {
     }
   ]
 
+  store_on_s3 = true
+  s3_bucket   = module.s3_lambda_builds.s3_bucket_id
+  s3_prefix   = "lambda-builds/"
+
+  artifacts_dir = "${path.root}/.terraform/lambda-builds/"
+
   environment_variables = {
     DATASET_URL       = var.dataset_url
     DATASET_S3_BUCKET = module.s3_dataset_bucket.s3_bucket_id
@@ -49,7 +55,8 @@ module "lambda_function_dataset" {
   }
 
   depends_on = [
-    module.s3_dataset_bucket
+    module.s3_dataset_bucket,
+    module.s3_lambda_builds
   ]
 }
 
@@ -65,4 +72,63 @@ resource "aws_cloudwatch_event_rule" "cron" {
 resource "aws_cloudwatch_event_target" "dataset_lambda_function" {
   rule = aws_cloudwatch_event_rule.cron.name
   arn  = module.lambda_function_dataset.lambda_function_arn
+}
+
+################################################
+# Lambda that parse dataset and deploy html page
+################################################
+module "lambda_function_parse" {
+  source  = "terraform-aws-modules/lambda/aws"
+  version = ">= 4.0.0"
+
+  function_name = "${var.project}-${var.environment}-dataset-parser"
+  description   = "Lamda function that download dataset from URL and save to S3 bucket"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.8"
+
+  publish    = true
+  hash_extra = "${var.project}-${var.environment}-dataset-parser"
+
+  memory_size = 512
+  timeout     = 60
+
+  source_path = [
+    {
+      path             = "${path.module}/../../lambda/dataset-parser"
+      pip_requirements = true # Will run "pip install" with default requirements.txt
+    }
+  ]
+
+  store_on_s3 = true
+  s3_bucket   = module.s3_lambda_builds.s3_bucket_id
+  s3_prefix   = "lambda-builds/"
+
+  artifacts_dir = "${path.root}/.terraform/lambda-builds/"
+
+  environment_variables = {
+    COUNTRY_CODE          = var.country
+    STATIC_PAGE_S3_BUCKET = module.s3_static_page.s3_bucket_id
+  }
+
+  attach_policy_statements = true
+  policy_statements = {
+    s3_access = {
+      effect = "Allow",
+      actions = [
+        "s3:Put*",
+        "s3:Get*",
+        "s3:Delete*"
+      ],
+      resources = [
+        "arn:aws:s3:::${module.s3_dataset_bucket.s3_bucket_id}/*",
+        "arn:aws:s3:::${module.s3_static_page.s3_bucket_id}/*"
+      ]
+    }
+  }
+
+  depends_on = [
+    module.s3_dataset_bucket,
+    module.s3_lambda_builds,
+    module.s3_static_page
+  ]
 }

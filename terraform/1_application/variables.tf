@@ -22,3 +22,8 @@ variable "cron_expression" {
   description = "The cron expression for the schedule"
   default     = "cron(0 12 * * ? *)"
 }
+
+variable "country" {
+  description = "ENV variable for Lambda function that will be use to parse dataset"
+  default     = "US"
+}
