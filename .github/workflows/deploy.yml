@@ -1,0 +1,53 @@
+---
+name: deploy
+
+on:
+  push:
+    branches:
+      - "release"
+
+env:
+  TF_VAR_country: BY
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.2.9
+
+      - name: Terraform fmt
+        id: fmt
+        run: |
+          cd terraform/1_application
+          terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: |
+          cd terraform/1_application
+          terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: |
+          cd terraform/1_application
+          terraform validate -no-color
+
+      - name: Terraform Apply
+        id: apply
+        run: |
+          cd terraform/1_application
+          terraform apply -auto-approve
