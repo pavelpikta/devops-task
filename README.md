@@ -15,7 +15,8 @@
   1. Download regularly (e.g. daily / hourly) some dataset from the free data provider.  
   If you down know any, choose from:  
     - <https://github.com/CSSEGISandData/COVID-19/>  
-    -  <https://openweathermap.org/current>  
+    - <https://openweathermap.org/current>  
+    - <https://covid19datahub.io/>  
   2. Store downloaded dataset to S3 bucket
   3. From every downloaded dataset, extract some specific data (eg data relevant for Czechia, Prague, ...)
   4. Display all extracted data using a single HTML page served from S3. A simple table is enough.
@@ -36,3 +37,5 @@
 - Document the next steps to make this small application being ready for production
 - Create CI / CD pipelines for your deployment
 - Use your imagination and provide more than expected
+
+### [Documentation](docs/README.md)
